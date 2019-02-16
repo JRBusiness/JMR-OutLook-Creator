@@ -23,7 +23,7 @@ A simple selenium script to mass create outlook account without having to input 
 
 `python app.py`
 
-#Disclaimer:
+# Disclaimer:
 This tool was created for educational purpose only!
 Any action relate to the usage of this tool is solely your responsibility.
 
