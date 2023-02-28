@@ -1,3 +1,9 @@
+#Notes 
+#The make_outlook method is not properly indented within the Register class. 
+#The __init__ method is closed before the make_outlook method begins, but it should still be part of the class. 
+#Additionally, the make_outlook method does not have the self parameter in its signature, but it uses instance variables like self.chrome_options and self.driver. 
+#This would cause the code to fail when attempting to run the method.
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
