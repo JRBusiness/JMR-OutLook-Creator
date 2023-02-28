@@ -104,15 +104,38 @@ def make_outlook(self):
                 username = self.gen.random_char(10) + self.gen.nonce()
                 password_input = self.gen.random_char(10) + self.gen.nonce()
                 print("Account created: " + username + "@outlook.com")
-                with open('outlook_accounts.txt', 'a+') as accounts_file:
-                    accounts_file.write(username + "@outlook.com:" + password_input + "\n")
-                return True
-            else:
-                print('Error Creating Account')
-                return False
-    except Exception as e:
-        print(e)
-        return False
+                
+                # Fill in account details
+                self.driver.find_element_by_id("FirstName").send_keys(self.fake.first_name())
+                self.driver.find_element_by_id("LastName").send_keys(self.fake.last_name())
+                birth_month = Select(self.driver.find_element_by_id("BirthMonth"))
+                birth_month.select_by_index(random.randint(1, 12))
+                birth_day = Select(self.driver.find_element_by_id("BirthDay"))
+                birth_day.select_by_index(random.randint(1, 28))
+                birth_year = Select(self.driver.find_element_by_id("BirthYear"))
+                birth_year.select_by_index(random.randint(1, 90))
+                self.driver.find_element_by_id("iSignupAction").click()
+                time.sleep(2)
+                gender = random.choice(["M", "F", ""])
+                if gender == "M":
+                    self.driver.find_element_by_id("OtherGender").click()
+                elif gender == "F":
+                    self.driver.find_element_by_id("Female").click()
+                self.driver.find_element_by_id("iSignupAction").click()
+                time.sleep(2)
+                
+                # Submit the form
+                if self.is_visible("iOptinEmail") is True:
+                    self.driver.find_element_by_id("iOptinEmail").click()
+                time.sleep(1)
+                if self.is_visible("iSignupAction") is True:
+                    self.driver.find_element_by_id("iSignupAction").click()
+time.sleep(1)
+if self.driver.current_url == "https://outlook.live.com/mail/0/inbox":
+    print("Account created successfully!")
+else:
+    print("Error creating account.")
+
 
 def solve_captcha(self):
     try:
