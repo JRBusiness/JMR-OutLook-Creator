@@ -132,9 +132,9 @@ def make_outlook(self):
                     self.driver.find_element_by_id("iSignupAction").click()
                 time.sleep(1)
                 if self.driver.current_url == "https://outlook.live.com/mail/0/inbox":
-    print("Account created successfully!")
-else:
-    print("Error creating account.")
+                print("Account created successfully!")
+                else:
+                print("Error creating account.")
 
 
 def solve_captcha(self):
