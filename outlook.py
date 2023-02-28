@@ -130,7 +130,7 @@ def make_outlook(self):
                 time.sleep(1)
                 if self.is_visible("iSignupAction") is True:
                     self.driver.find_element_by_id("iSignupAction").click()
-time.sleep(1)
+                time.sleep(1)
 if self.driver.current_url == "https://outlook.live.com/mail/0/inbox":
     print("Account created successfully!")
 else:
