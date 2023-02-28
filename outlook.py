@@ -66,48 +66,50 @@ class Register:
         return page_state == 'complete'
 
 def make_outlook(self):
-        try:
-            print("Outlook-Bot in AutoBot series, Coded by Error Error")
-            print("Generating new account...")
-            with webdriver.Chrome(ChromeDriverManager().install(), options=self.chrome_options) as self.driver:
-                proxy = self.get_proxy()
-                self.chrome_options.add_argument('--proxy-server=socks://{}'.format(proxy))
-                self.driver.get(self.outlook_url)
-                WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'iSignupAction')))
-                if self.is_visible("phoneCountry") is True:
-                    pass
-                time.sleep(0.5)
-                self.driver.find_element_by_id("phoneCountry").click()
-                time.sleep(0.5)
-                self.driver.find_element_by_id("phoneCountry").send_keys("United States")
-                time.sleep(0.5)
-                self.driver.find_element_by_id("phoneCountry").send_keys(u'\ue007')
-                time.sleep(1)
-                if self.is_visible("PhoneNumber") is True:
-                    pass
-                phone = self.fake.phone_number()
-                self.driver.find_element_by_id("PhoneNumber").send_keys(phone)
-                if self.is_visible("iSignupAction") is True:
+    try:
+        print("Outlook-Bot in AutoBot series, Coded by Error Error")
+        print("Generating new account...")
+        with webdriver.Chrome(ChromeDriverManager().install(), options=self.chrome_options) as self.driver:
+            proxy = self.get_proxy()
+            self.chrome_options.add_argument('--proxy-server=socks://{}'.format(proxy))
+            self.driver.get(self.outlook_url)
+            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'iSignupAction')))
+            if self.is_visible("phoneCountry") is True:
                 pass
-        wait(0.5)
-        self.driver.find_element_by_id("iSignupAction").click()
-        wait(2)
-        if self.is_visible("id__0-0") is True:
-            pass
-        else:
-            return False
-        print('Solving Captcha')
-        self.solve_captcha()
-        wait(10)
-        if self.is_visible("idBtn_Back") is True:
-            self.driver.find_element_by_id("idBtn_Back").click()
-            print("Account created: " + username + "@outlook.com")
-            with open('outlook_accounts.txt', 'a+') as accounts_file:
-                accounts_file.write(username + "@outlook.com:" + password_input + "\n")
-            return True
-        else:
-            print('Error Creating Account')
-            return False
+            time.sleep(0.5)
+            self.driver.find_element_by_id("phoneCountry").click()
+            time.sleep(0.5)
+            self.driver.find_element_by_id("phoneCountry").send_keys("United States")
+            time.sleep(0.5)
+            self.driver.find_element_by_id("phoneCountry").send_keys(u'\ue007')
+            time.sleep(1)
+            if self.is_visible("PhoneNumber") is True:
+                pass
+            phone = self.fake.phone_number()
+            self.driver.find_element_by_id("PhoneNumber").send_keys(phone)
+            if self.is_visible("iSignupAction") is True:
+                pass
+            time.sleep(0.5)
+            self.driver.find_element_by_id("iSignupAction").click()
+            time.sleep(2)
+            if self.is_visible("id__0-0") is True:
+                pass
+            else:
+                return False
+            print('Solving Captcha')
+            self.solve_captcha()
+            time.sleep(10)
+            if self.is_visible("idBtn_Back") is True:
+                self.driver.find_element_by_id("idBtn_Back").click()
+                username = self.gen.random_char(10) + self.gen.nonce()
+                password_input = self.gen.random_char(10) + self.gen.nonce()
+                print("Account created: " + username + "@outlook.com")
+                with open('outlook_accounts.txt', 'a+') as accounts_file:
+                    accounts_file.write(username + "@outlook.com:" + password_input + "\n")
+                return True
+            else:
+                print('Error Creating Account')
+                return False
     except Exception as e:
         print(e)
         return False
