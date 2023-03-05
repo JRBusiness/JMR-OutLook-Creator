@@ -1,30 +1,33 @@
+#Notes 
+#The make_outlook method is not properly indented within the Register class. 
+#The __init__ method is closed before the make_outlook method begins, but it should still be part of the class. 
+#Additionally, the make_outlook method does not have the self parameter in its signature, but it uses instance variables like self.chrome_options and self.driver. 
+#This would cause the code to fail when attempting to run the method.
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import selenium.webdriver.support.expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-import selenium.webdriver.support.ui as ui
-from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-import csv
 from faker import Faker
 from faker.providers import person
+from python_anticaptcha import AnticaptchaClient, ImageToTextTask
 import random
 import string
-from time import sleep as wait
-import sys
-from pyvirtualdisplay import Display
 import json
-from urllib.request import urlretrieve
 import requests
-from python_anticaptcha import AnticaptchaClient, ImageToTextTask
 import time
-import os
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 class GenerateRandom:
-    def random_char(self, y):
+    @staticmethod
+    def random_char(y):
         return ''.join(random.choice(string.ascii_letters) for x in range(y))
 
-    def nonce(self, length=4):
+    @staticmethod
+    def nonce(length=4):
         return ''.join([str(random.randint(0, 9)) for i in range(length)])
 
 
@@ -37,34 +40,25 @@ class Register:
                 self.user_password = config['user_password']
                 self.proxy_file = config['proxyfile']
                 self.ac_token = config['anticaptchatoken']
-                self.headless = config['headless']
-                self.password = config['password']
                 self.locale = config['locale']
         except FileNotFoundError:
             print("No config.json found")
         self.outlook_url = "https://outlook.live.com/owa/?nlp=1&signup=1"
         self.chrome_options = Options()
-        if sys.platform == "linux" or sys.platform == "linux2":
-            self.exe_path = "drivers/chromedriver"
-            self.chrome_options.add_argument('--no-sandbox')
-            self.chrome_options.add_argument('--headless')
-            self.chrome_options.add_argument('--disable-gpu')
-            display = Display(visible=0, size=(800, 800))
-            display.start()
-        else:
-            self.exe_path = "drivers/chromedriver.exe"
-        # chrome_options.add_argument("--headless")
         self.chrome_options.add_argument("--window-size=1920x1080")
-        if self.headless == "True":
-            self.chrome_options.add_argument('--headless')
+        self.chrome_options.add_argument('--no-sandbox')
+        self.chrome_options.add_argument('--disable-gpu')
+        self.chrome_options.add_argument('--disable-dev-shm-usage')
+        self.chrome_options.add_argument('--log-level=3')
+        self.chrome_options.headless = True
         self.fake = Faker(self.locale)
         self.gen = GenerateRandom()
 
     def is_visible(self, locator, timeout=30):
         try:
-            ui.WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.ID, locator)))
+            WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.ID, locator)))
             return True
-        except TimeoutException:
+        except:
             return False
 
     def get_proxy(self):
@@ -75,100 +69,104 @@ class Register:
 
     def page_has_loaded(self):
         page_state = self.driver.execute_script('return document.readyState;')
-        return True
+        return page_state == 'complete'
 
-    def make_outlook(self):
-        try:
-            print("Outlook-Bot in AutoBot series, Coded by JBusiness")
-            print("Generating new account...")
-            self.driver = webdriver.Chrome(chrome_options=self.chrome_options, executable_path=self.exe_path)
+def make_outlook(self):
+    try:
+        print("Outlook-Bot in AutoBot series, Coded by Error Error")
+        print("Generating new account...")
+        with webdriver.Chrome(ChromeDriverManager().install(), options=self.chrome_options) as self.driver:
             proxy = self.get_proxy()
             self.chrome_options.add_argument('--proxy-server=socks://{}'.format(proxy))
             self.driver.get(self.outlook_url)
-            if self.page_has_loaded() is True:
-                if self.is_visible("CredentialsPageTitle") is True:
-                    pass
-                    print('Page Loaded')
-            first, last = self.fake.first_name().rstrip(), self.fake.last_name().rstrip()
-            username = first + last + str(self.gen.nonce(5))
-            password_input = self.user_password
-            self.driver.find_element_by_id("MemberName").send_keys(username)
+            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'iSignupAction')))
+            if self.is_visible("phoneCountry") is True:
+                pass
+            time.sleep(0.5)
+            self.driver.find_element_by_id("phoneCountry").click()
+            time.sleep(0.5)
+            self.driver.find_element_by_id("phoneCountry").send_keys("United States")
+            time.sleep(0.5)
+            self.driver.find_element_by_id("phoneCountry").send_keys(u'\ue007')
+            time.sleep(1)
+            if self.is_visible("PhoneNumber") is True:
+                pass
+            phone = self.fake.phone_number()
+            self.driver.find_element_by_id("PhoneNumber").send_keys(phone)
             if self.is_visible("iSignupAction") is True:
                 pass
-            wait(0.5)
+            time.sleep(0.5)
             self.driver.find_element_by_id("iSignupAction").click()
-            wait(2)
-            if self.is_visible("PasswordInput") is True:
-                    pass
-            self.driver.find_element_by_id("PasswordInput").send_keys(password_input)
-            if self.is_visible("iSignupAction") is True:
-                    pass
-            wait(0.5)
-            self.driver.find_element_by_id("iSignupAction").click()
-            wait(1)
-            if self.is_visible("FirstName") is True:
-                    pass
-            self.driver.find_element_by_id("FirstName").send_keys(first)
-            self.driver.find_element_by_id("LastName").send_keys(last)
-            if self.is_visible("iSignupAction") is True:
-                    pass
-            wait(0.5)
-            self.driver.find_element_by_id("iSignupAction").click()
-            wait(1)
-            if self.is_visible("Country") is True:
-                    pass
-            country = requests.get('https://ipapi.co/country_name/', proxies={"http": "socks://" + proxy}).text
-            countrygeo = Select(self.driver.find_element_by_id("Country"))
-            countrygeo.select_by_visible_text(str(country))
-            indexm = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-              'August', 'September', 'October', 'November', 'December']
-            indexd = random.randint(1, 28)
-            indexy = random.randint(1980, 2000)
-            birthM = Select(self.driver.find_element_by_id("BirthMonth"))
-            birthM.select_by_visible_text(random.choice(indexm))
-            birthD = Select(self.driver.find_element_by_id("BirthDay"))
-            birthD.select_by_visible_text(str(indexd))
-            birthY = Select(self.driver.find_element_by_id("BirthYear"))
-            birthY.select_by_visible_text(str(indexy))
-            self.driver.find_element_by_id("iSignupAction").click()
-            wait(5)
-            img = self.driver.find_elements_by_tag_name("img")[4]
-            src = img.get_attribute('src')
-            filename = str(int(time.time())) + ".png"
-            urlretrieve(src, filename)
-            file = open(filename, 'rb')
-            wait(0.5)
-            client = AnticaptchaClient(self.ac_token)
-            task = ImageToTextTask(file)
-            job = client.createTask(task)
-            print("Submitting Captcha")
-            job.join()
-            cap = job.get_captcha_text()
-            file.close()
-            os.remove(filename)
-            wait(0.5)
-            self.driver.find_element_by_tag_name("input").send_keys(cap)
-            wait(3)
-            self.driver.find_element_by_id("iSignupAction").click()
-            print("{}@outlook.com:{}:{}".format(username, self.user_password, country))
-            account = {"username": username + "@outlook.com", "password": self.user_password, "country": country}
-            with open("output/outlook_accounts.csv", 'a', newline='') as file:
-                writer = csv.writer(file, delimiter=',')
-                writer.writerow(account[i] for i in account)
-        except Exception as e:
-            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+            time.sleep(2)
+            if self.is_visible("id__0-0") is True:
+                pass
+            else:
+                return False
+            print('Solving Captcha')
+            self.solve_captcha()
+            time.sleep(10)
+            if self.is_visible("idBtn_Back") is True:
+                self.driver.find_element_by_id("idBtn_Back").click()
+                username = self.gen.random_char(10) + self.gen.nonce()
+                password_input = self.gen.random_char(10) + self.gen.nonce()
+                print("Account created: " + username + "@outlook.com")
+                
+                # Fill in account details
+                self.driver.find_element_by_id("FirstName").send_keys(self.fake.first_name())
+                self.driver.find_element_by_id("LastName").send_keys(self.fake.last_name())
+                birth_month = Select(self.driver.find_element_by_id("BirthMonth"))
+                birth_month.select_by_index(random.randint(1, 12))
+                birth_day = Select(self.driver.find_element_by_id("BirthDay"))
+                birth_day.select_by_index(random.randint(1, 28))
+                birth_year = Select(self.driver.find_element_by_id("BirthYear"))
+                birth_year.select_by_index(random.randint(1, 90))
+                self.driver.find_element_by_id("iSignupAction").click()
+                time.sleep(2)
+                gender = random.choice(["M", "F", ""])
+                if gender == "M":
+                    self.driver.find_element_by_id("OtherGender").click()
+                elif gender == "F":
+                    self.driver.find_element_by_id("Female").click()
+                self.driver.find_element_by_id("iSignupAction").click()
+                time.sleep(2)
+                
+                # Submit the form
+                if self.is_visible("iOptinEmail") is True:
+                    self.driver.find_element_by_id("iOptinEmail").click()
+                time.sleep(1)
+                if self.is_visible("iSignupAction") is True:
+                    self.driver.find_element_by_id("iSignupAction").click()
+                time.sleep(1)
+                if self.driver.current_url == "https://outlook.live.com/mail/0/inbox":
+                print("Account created successfully!")
+                else:
+                print("Error creating account.")
 
 
-if __name__ == "__main__":
-    threads = []
-    regBot = Register()
-    print("Outlook Creator -- Coded by JBusiness")
-    baba = int(input("How many account would you like to create?" + "\n"))
-    if regBot.password == "jmrevolution":
-        with open(regBot.proxy_file) as f:
-            proxies = f.readlines()
-            for i in range(baba):
-                regBot.make_outlook()
-            print("Finished.")
-    else:
-        print("Incorrect Password")
+def solve_captcha(self):
+    try:
+        if self.is_visible("hipTemplateContainer") is True:
+            while True:
+                print("Waiting for captcha...")
+                wait(2)
+                if self.is_visible("hipTemplateContainer") is False:
+                    break
+            print("Solved captcha!")
+    except Exception as e:
+        print("Error solving captcha: " + str(e))
+
+def start(self, count):
+    try:
+        for i in range(count):
+            print("Creating account #" + str(i + 1))
+            while True:
+                created = self.make_outlook()
+                if created is True:
+                    break
+                wait(5)
+    except Exception as e:
+        print(e)
+if name == "main":
+r = Register()
+r.start(1) # Specify how many accounts to generate.
+                                                                           
